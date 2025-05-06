@@ -51,7 +51,7 @@ def run():
     flask_thread = FlaskThread()
     flask_thread.daemon = True
     flask_thread.start()
-    print(flask_thread)
+    
     return flask_thread
 
 
@@ -65,21 +65,20 @@ def status():
 class FlaskThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.server = None
         
     def run(self):
         try:
-            app.run(port=current_port, debug=False, use_reloader=False, threaded=True)
-        finally:
-            manager.web_server_thread = None
+            self.server = app.run(port=current_port, debug=False, use_reloader=False, threaded=True)
+        
+        except Exception as e:
+            manager.web_server_thread = f'error: {e}'
         
     def stop(self):
         if not self.server:
             return False
-            
-        self.server.shutdown()
-        self.thread.join(timeout=5)
+         
         self.server = None
-        self.thread = None
         
         manager.web_server_thread = None
         return True

@@ -8,10 +8,6 @@ import questionary
 
 def run():
     
-    if(manager.attacks_satus != 'off'):
-        if(manager.attack_type == 'mac_address_flooding'):
-            print(mac_address_flooding.status())
-    
     final_choice = print_menu()
     choice = ''
 
@@ -46,7 +42,7 @@ def print_menu():
 
 def print_attack_menu():
     choice = questionary.select(
-    'Attack menu: ',
+    f'\nSniffer: {manager.sniffer_thread}\n\nCurrently: {manager.attack_status}\nAttack type: {manager.attack_type}\n\nAttack menu: ',
         choices=[
             'Mac address flooding',
             'Coming soon',
@@ -58,7 +54,7 @@ def print_attack_menu():
 
 def print_web_interface_menu():
     choice = questionary.select(
-    'Web interface menu: ',
+    '\nWeb interface menu: ',
         choices=[
             'Check status',
             f'Toggle (currently: {server.status()})',
@@ -70,7 +66,7 @@ def print_web_interface_menu():
 
 def print_configuration_menu():
     choice = questionary.select(
-    'Configuration menu: ',
+    '\nConfiguration menu: ',
         choices=[
             'Core interface',
             'Web server port',
@@ -88,12 +84,12 @@ def print_banner():
     clear()
     print(
 '''
-██╗     ██████╗       ███████╗██╗   ██╗██╗████████╗███████╗
-██║     ╚════██╗      ██╔════╝██║   ██║██║╚══██╔══╝██╔════╝
-██║      █████╔╝█████╗███████╗██║   ██║██║   ██║   █████╗  
-██║     ██╔═══╝ ╚════╝╚════██║██║   ██║██║   ██║   ██╔══╝  
-███████╗███████╗      ███████║╚██████╔╝██║   ██║   ███████╗
-╚══════╝╚══════╝      ╚══════╝ ╚═════╝ ╚═╝   ╚═╝   ╚══════╝
+              _ _       _               _        _ _             
+ _____      _(_) |_ ___| |__        ___| |_ _ __(_) | _____ _ __ 
+/ __\ \ /\ / / | __/ __| '_ \ _____/ __| __| '__| | |/ / _ \ '__|
+\__ \\ V  V /| | || (__| | | |_____\__ \ |_| |  | |   <  __/ |   
+|___/ \_/\_/ |_|\__\___|_| |_|     |___/\__|_|  |_|_|\_\___|_|   
+    
 '''
     )
 

@@ -3,13 +3,15 @@ from src.utilities import configuration
 from src.web import server
 from src.cli import menu
 from src.attacks import mac_address_flooding
+from src.attacks import sniff
 
 import time
 
 
-web_server_thread = None
+web_server_thread = 'off'
+sniffer_thread = 'off'
 
-attacks_satus = 'off'
+attack_status = 'off'
 attack_type = ''
 
 direct_attack = False
@@ -19,9 +21,9 @@ def run():
 
     manage_arguments()
 
-    # running flask into a thread
-    web_server_thread = server.run()
-    time.sleep(1) # TODO: check when flask has printed shit
+    # running flask into a thread FLASK PROBLEM WITH LOGGING
+    #web_server_thread = server.run()
+    #time.sleep(1) # TODO: check when flask has printed shit
 
     menu.print_banner()
     while(True):
@@ -56,6 +58,7 @@ def manage_menu_choices(choice):
 
     elif(choice[0] == 'Attack! Mac address flooding'):
         mac_address_flooding.run()
+        sniff.run()
 
     elif(choice[0] == 'Web interface Check status'):
         print(server.status())
