@@ -1,0 +1,7 @@
+[project]
+name = "raspi-L2"
+version = "1.0"
+description = "Raspberry pi firware to conduce layer 2 attacks"
+dependencies = [
+    "scappy>=2.5.0",
+]

@@ -1,0 +1,5 @@
+[core]
+interface = "en0"
+
+[web_server]
+port = "80"
