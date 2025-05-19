@@ -42,10 +42,13 @@ def print_menu():
 
 def print_attack_menu():
     choice = questionary.select(
-    f'\nSniffer: {manager.sniffer_thread}\n\nCurrently: {manager.attack_status}\nAttack type: {manager.attack_type}\n\nAttack menu: ',
+    f'\nSniffer status: {manager.sniffer_status}\n\nAttack status: {manager.attack_status}\nAttack type: {manager.attack_type}\n\nAttack menu: ',
         choices=[
             'Mac address flooding',
+            'Sniffer',
             'Coming soon',
+            'Stop attack',
+            'Stop sniffer',
             '←'
         ]
     ).ask()
@@ -57,7 +60,7 @@ def print_web_interface_menu():
     '\nWeb interface menu: ',
         choices=[
             'Check status',
-            f'Toggle (currently: {server.status()})',
+            f'Toggle (currently: {manager.web_server_status})',
             '←'
         ]
     ).ask()

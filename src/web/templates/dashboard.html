@@ -5,8 +5,29 @@
     <title>Dashboard</title>
 </head>
 <body>
-    <a>Launch attach:</a>
-    <a> - <a>MAC Address Table overflow</a></a>
-    <a> - <a>ARP Spoofing</a></a>
+    <header>
+        <div class="left">
+            <a>user: {{home_login_username}}</a>
+        </div>
+        <div class="center">
+            <a></a>
+        </div>
+        <div class="right">
+            <a>Attack status: {{home_attack_status}}</a>
+        </div>
+    </header>
+
+    <script>
+
+        function update_date(){
+            let date_string = new Date().toLocaleString();
+
+            date_element = document.querySelector('header .center a');
+            date_element.appendChild(document.createTextNode(date_string))
+        }
+
+        update_date()
+
+    </script>
 </body>
 </html>

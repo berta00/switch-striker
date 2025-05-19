@@ -27,24 +27,28 @@ class SniffThread(threading.Thread):
 
     def run(self):
         try:
-            manager.sniffer_thread = 'on'
-            while(manager.sniffer_thread == 'on'):
-                sniffed_traffic = sniff(count=5)
+            manager.sniffer_status = 'on'
+            while(manager.sniffer_status == 'on'):
+                sniffed_traffic = sniff(count=1)
                 wrpcap(directory_path + '/../../pcap/intercepted.pcap', sniffed_traffic, append=True)
+                manager.snifed_packets += 1
 
         except Exception as e:
-            manager.sniffer_thread = f'error: {e}'
+            manager.sniffer_status = f'error: {e}'
+            manager.sniffer_thread = None
             return
         
-        manager.sniffer_thread = 'off'
+        manager.sniffer_thread = None
+        manager.sniffer_status = 'off'
 
     def stop(self):
-        if manager.sniffer_thread == 'on':
+        if manager.sniffer_thread != None:
             return False
-        elif manager.sniffer_thread[:5] == 'error':
+        elif manager.sniffer_thread != None and manager.sniffer_status[:5] == 'error':
             return False
         
-        manager.sniffer_thread = 'off'
+        manager.sniffer_thread = None
+        manager.sniffer_status = 'off'
         self.join()
 
         return True 
