@@ -1,4 +1,5 @@
 from src.core import manager
+from src.utilities import pcap_reader
 
 import threading
 import time
@@ -30,7 +31,8 @@ class SniffThread(threading.Thread):
             manager.sniffer_status = 'on'
             while(manager.sniffer_status == 'on'):
                 sniffed_traffic = sniff(count=1)
-                wrpcap(directory_path + '/../../pcap/intercepted.pcap', sniffed_traffic, append=True)
+                wrpcap(directory_path + '/../../pcap/intercepted.pcap', sniffed_traffic) #TODO: possible logging option 
+                pcap_reader.run()
                 manager.snifed_packets += 1
 
         except Exception as e:

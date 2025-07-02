@@ -36,6 +36,7 @@ async def get_current_username(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     return username
 
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
@@ -66,7 +67,7 @@ def run():
     web_server_thread = WebServerThread()
     web_server_thread.daemon = True
     web_server_thread.start()
-    
+
     return web_server_thread
 
 class WebServerThread(threading.Thread):
